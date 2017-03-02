@@ -417,7 +417,7 @@ namespace XLua
                     }
                 }
 
-                LuaAPI.lua_unref(L, reference);
+                LuaAPI.lua_unref(L, reference); 
                 delegate_bridges.Remove(reference);
             }
             else
@@ -428,8 +428,7 @@ namespace XLua
 
 		public object CreateInterfaceBridge(RealStatePtr L, Type interfaceType, int idx)
         {
-            Func<int, LuaEnv, LuaBase> creator;
-
+            Func<int, LuaEnv, LuaBase> creator; 
             if (!interfaceBridgeCreators.TryGetValue(interfaceType, out creator))
             {
 #if UNITY_EDITOR || XLUA_GENERAL

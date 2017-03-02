@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEditor;
 using System.IO;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 public class CreateAssetbundles
 { 	
@@ -18,11 +19,11 @@ public class CreateAssetbundles
     [MenuItem("GAME/Pack/UI")]
 	public static void Pack_UI(){  
 		string ui = "ui/"; 
-		ExecuteCommunity(AssetbundlesBuildTarget, BuildAssetBundleOptions.None, LuaConfig.TempDataPath+ui,"*.prefab",  LuaConfig.AssetsStreamingAssets+ui);
+		ExecuteCommunity(AssetbundlesBuildTarget, BuildAssetBundleOptions.None, Util.TempDataPath+ui,"*.prefab",  Util.AssetsStreamingAssets+ui);
 	}
 
     static void CreateDirectoryAndDeleteOldFile(string outPath){ 
-		Debug.Log("创建目标文件:"+outPath);
+		Util.Log("创建目标文件:"+outPath);
         // 创建一个目标文件
 		if (!Directory.Exists (outPath)) { 
 			Directory.CreateDirectory (outPath); 
@@ -33,8 +34,7 @@ public class CreateAssetbundles
         foreach (string bundle in existingAssetbundles)
         {
 			File.Delete(bundle);
-        } 
-
+        }   
 		AssetDatabase.Refresh ();
     }
 	
@@ -44,11 +44,10 @@ public class CreateAssetbundles
 			string[] existingAssetbundles = Directory.GetFiles(outPath);
 			foreach (string bundle in existingAssetbundles)
 			{
-				if(!bundle.EndsWith(LuaConfig.Suffix))
+				if(!bundle.EndsWith(Util.Suffix))
 					File.Delete(bundle);
 			} 
-		}
-
+		}   
 		AssetDatabase.Refresh ();
 	}
     
@@ -61,12 +60,11 @@ public class CreateAssetbundles
         {
             string[] dpath = Directory.GetParent(matFile).FullName.Split('/');
             string assetPath = "Assets" + matFile.Replace(Application.dataPath, "").Replace('\\', '/');
-            Debug.Log("******* Creating assetbundles for: " + assetPath); 
+			Util.Log("******* Creating assetbundles for: " + assetPath); 
             files.Add(assetPath);//打包的资源包名称 
-        }
-
+        } 
         AssetBundleBuild[] buildMap = new AssetBundleBuild[1];
-		buildMap[0].assetBundleName = saveName + LuaConfig.Suffix;
+		buildMap[0].assetBundleName = saveName + Util.Suffix;
         buildMap[0].assetNames = files.ToArray();
 
         BuildPipeline.BuildAssetBundles(outPath, buildMap, options, buildTarget);
@@ -86,11 +84,11 @@ public class CreateAssetbundles
             GameObject o = (GameObject)AssetDatabase.LoadAssetAtPath(assetPath, typeof(GameObject));
             string name = o.name.ToLower();
 
-			string savePath = outPath + name + LuaConfig.Suffix;
-            Debug.Log("******* Creating assetbundles for: " + savePath);
+			string savePath = outPath + name + Util.Suffix;
+			Util.Log("******* Creating assetbundles for: " + savePath);
             
             AssetBundleBuild[] buildMap = new AssetBundleBuild[1];
-			buildMap[0].assetBundleName = name + LuaConfig.Suffix; //打包的资源包名称
+			buildMap[0].assetBundleName = name + Util.Suffix; //打包的资源包名称
             buildMap[0].assetNames = new string[] { assetPath };
             BuildPipeline.BuildAssetBundles(outPath, buildMap, options, buildTarget); 
 
@@ -108,29 +106,23 @@ public class CreateAssetbundles
 			string assetPath = "Assets" + matFile.Replace(Application.dataPath, "").Replace('\\', '/');
 			GameObject o = (GameObject)AssetDatabase.LoadAssetAtPath(assetPath, typeof(GameObject)); 
 			string name = o.name.ToLower();
-			string savePath = outPath + name+LuaConfig.Suffix;
-            Debug.Log("******* Creating assetbundles for: " + savePath); 
+			string savePath = outPath + name+Util.Suffix;
+			Util.Log("******* Creating assetbundles for: " + savePath); 
             AssetBundleBuild[] buildMap = new AssetBundleBuild[1];
-			buildMap[0].assetBundleName = name + LuaConfig.Suffix; //打包的资源包名称
+			buildMap[0].assetBundleName = name + Util.Suffix; //打包的资源包名称
             buildMap[0].assetNames = new string[] { assetPath };
             BuildPipeline.BuildAssetBundles(outPath, buildMap, options, buildTarget); 
 		}	
 		RemoveNotSuffixFile (outPath);
 	}
     
-	[MenuItem("GAME/Build Lua")]
-	public static void BuildLua(){  
-			
-	}
-
-
 	static List<string> paths = new List<string>();
 	static List<string> files = new List<string>();
 
 	[MenuItem("GAME/Files")]
 	public static void BuildFileIndex() {
 		
-		string resPath = LuaConfig.StreamingAssets;
+		string resPath = Util.StreamingAssets;
 		///----------------------创建文件列表-----------------------
 		string newFilePath = resPath + "files.txt";
 		if (File.Exists(newFilePath)) File.Delete(newFilePath); 
@@ -148,7 +140,7 @@ public class CreateAssetbundles
 			sw.WriteLine(value + "|" + md5);
 		}	
 		sw.Close(); fs.Close(); 
-		Debug.Log("*******生成资源管理文件:"+newFilePath); 
+		Util.Log("*******生成资源管理文件:"+newFilePath); 
 	}
 
 	/// <summary>
@@ -168,5 +160,77 @@ public class CreateAssetbundles
 		}
 	}
 
+	static void UpdateProgress(int progress, int progressMax, string desc) {
+		string title = "Processing...[" + progress + " - " + progressMax + "]";
+		float value = (float)progress / (float)progressMax;
+		EditorUtility.DisplayProgressBar(title, desc, value);
+	}
+
+
+	//Encode Lua File 
+	[MenuItem("GAME/Encode Lua")] 
+	static void HandleLuaFile() {
+		string luaPath = Util.StreamingAssets + "lua/"; 
+		//----------复制Lua文件----------------
+		if (!Directory.Exists(luaPath)) {
+			Directory.CreateDirectory(luaPath); 
+		}
+		string[] luaPaths = { Util.TempDataPath + "lua/" }; 
+		for (int i = 0; i < luaPaths.Length; i++) {
+			paths.Clear(); files.Clear();
+			string luaDataPath = luaPaths[i].ToLower();
+			Recursive(luaDataPath);
+			int n = 0;
+			foreach (string f in files) {
+				if (f.EndsWith(".meta")) continue;
+				string newfile = f.Replace(luaDataPath, "");
+				string newpath = luaPath + newfile;
+				string path = Path.GetDirectoryName(newpath);
+				if (!Directory.Exists(path)) Directory.CreateDirectory(path); 
+				if (File.Exists(newpath)) {
+					File.Delete(newpath);
+				} 
+				EncodeLuaFile(f, newpath); 
+				UpdateProgress(n++, files.Count, newpath);
+			} 	
+		}	
+		EditorUtility.ClearProgressBar();
+		AssetDatabase.Refresh();
+	}	
+
+	static void EncodeLuaFile(string srcFile,string outFile) { 
+		if (!srcFile.ToLower().EndsWith(".lua")) {
+			File.Copy(srcFile, outFile, true);
+			return;
+		}	
+		bool isWin = true; 
+		string luaexe = string.Empty;
+		string args = string.Empty;
+		string exedir = string.Empty;
+		string currDir = Directory.GetCurrentDirectory();
+		if (Application.platform == RuntimePlatform.WindowsEditor) {
+			isWin = true;
+			luaexe = "luajit.exe";
+			args = "-b " + srcFile + " " + outFile;
+			exedir = Util.AssetsDataPath.Replace("Assets", "") + "LuaEncoder/luajit/";
+		} else if (Application.platform == RuntimePlatform.OSXEditor) {
+			isWin = false;
+			luaexe = "./luac";
+			args = "-o " + outFile + " " + srcFile;
+			exedir = Util.AssetsDataPath.Replace("Assets", "") + "LuaEncoder/luavm/";
+		}	
+		Directory.SetCurrentDirectory(exedir);
+		ProcessStartInfo info = new ProcessStartInfo();
+		info.FileName = luaexe;
+		info.Arguments = args;
+		info.WindowStyle = ProcessWindowStyle.Hidden;
+		info.UseShellExecute = isWin;
+		info.ErrorDialog = true;
+		Util.Log(info.FileName + " " + info.Arguments);
+
+		Process pro = Process.Start(info);
+		pro.WaitForExit();
+		Directory.SetCurrentDirectory(currDir);
+	}
 
 }

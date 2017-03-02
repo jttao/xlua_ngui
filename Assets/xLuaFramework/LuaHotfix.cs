@@ -45,14 +45,17 @@ public class LuaHotfix : MonoBehaviour {
 		_luaEnv = new LuaEnv ();
 		_luaEnv.AddLoader ((ref string filename) => {
 			//lua customer path
-			filename = LuaConfig.PersistentDataPath+"lua/game/"+filename+".lua";   
+			filename = Util.PersistentDataPath+"lua/game/"+filename+".lua";   
+			return File.ReadAllBytes(filename);
+			/***
 			string script= File.ReadAllText(filename);
 			return System.Text.Encoding.UTF8.GetBytes(script);
+			***/
 		}); 
 	}
 
 	void Start(){  
-		_luaEnv.DoString ("require 'main'");
+		_luaEnv.DoString ("require 'main'","main");
 	}
 
 	// Update is called once per frame
@@ -64,12 +67,8 @@ public class LuaHotfix : MonoBehaviour {
 		}
 	}
 
-	void OnDestroy(){
-		Debug.Log ("OnDestroy"); 
-		if (_luaEnv != null) {  
-			_luaEnv.Dispose (true);
-			_luaEnv = null;
-		} 
+	void OnDestroy(){ 
+		_luaEnv = null;
 		_luaHotfix = null;
 	}
 

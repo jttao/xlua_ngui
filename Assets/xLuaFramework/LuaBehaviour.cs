@@ -84,7 +84,7 @@ public class LuaBehaviour : MonoBehaviour {
 	{	
 		LuaEnv luaEnv = LuaHotfix.Instance.luaEnv; 
 
-		luaEnv.DoString("require '"+luaModel+"'"); 
+		luaEnv.DoString("require '"+luaModel+"'",luaModel); 
   		
 		LuaBehaviourCalc calc_new = luaEnv.Global.GetInPath<LuaBehaviourCalc> ("new_lua_mono");
 		

@@ -17,7 +17,7 @@ public class TestMain : MonoBehaviour {
 	/// 释放资源
 	/// </summary>
 	public void CheckExtractResource() {
-		bool isExists = Directory.Exists(LuaConfig.PersistentDataPath) && Directory.Exists(LuaConfig.PersistentDataPath + "lua/") && File.Exists(LuaConfig.PersistentDataPath + "files.txt");
+		bool isExists = Directory.Exists(Util.PersistentDataPath) && Directory.Exists(Util.PersistentDataPath + "lua/") && File.Exists(Util.PersistentDataPath + "files.txt");
 		if (isExists) { 
 			LuaHotfix.Instance.Init ();
 			isInitOk = true;
@@ -27,11 +27,11 @@ public class TestMain : MonoBehaviour {
 	}
 
 	IEnumerator OnExtractResource() {
-		string dataPath = LuaConfig.PersistentDataPath;  //数据目录
-		string resPath = LuaConfig.StreamingAssets; //游戏包资源目录
+		string dataPath = Util.PersistentDataPath;  //数据目录
+		string resPath = Util.StreamingAssets; //游戏包资源目录
 
 		if (Application.platform == RuntimePlatform.Android) {
-			resPath = LuaConfig.WWWStreamingAssets;
+			resPath = Util.WWWStreamingAssets;
 		}
 
 		if (Directory.Exists(dataPath)) Directory.Delete(dataPath, true);
