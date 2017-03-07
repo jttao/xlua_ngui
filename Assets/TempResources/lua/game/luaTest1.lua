@@ -37,9 +37,9 @@ function luaTest1:Start ()
     local button1 = self.Mono.transform:FindChild ("Camera/Button0"):GetComponent(typeof(CS.UIButton)) 
     button1.onClick:Add (CS.EventDelegate (onclick1)); 
     button1.transform:FindChild("Label"):GetComponent(typeof(CS.UILabel)).text = "Resources"
-
+    
     local function onclick2()  
-        local path = CS.LuaConfig.WWWStreamingAssets.."ui/panel2.assetbundle"  
+        local path = CS.Util.WWWStreamingAssets.."ui/panel2.assetbundle"  
         self.Mono:StartWWW(path,function(ab)
             print("lua call laod www ok")  
             local panel = CS.UnityEngine.GameObject.Instantiate( ab:LoadAsset("Panel2") )

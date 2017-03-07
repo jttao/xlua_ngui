@@ -22,6 +22,8 @@ function luaTest3:Start ()
         CS.UnityEngine.GameObject.Destroy(self.Mono.gameObject)
     end ));  
     
+    self.Mono.gameObject:AddComponent(typeof(CS.HotfixTest))    
+
 end 
 
 lua_packages['luaTest3'] = luaTest3

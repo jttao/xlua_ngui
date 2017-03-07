@@ -22,6 +22,7 @@ function luaTest4:Start ()
 
     lua1:A()
 
+    
 end 
 
 function luaTest4:B()

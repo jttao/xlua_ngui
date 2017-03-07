@@ -26,6 +26,7 @@ public class HotfixDome : MonoBehaviour {
 
 		UILabel label = null;
 
+
 	}
 
 	public void HideUI(){ 
